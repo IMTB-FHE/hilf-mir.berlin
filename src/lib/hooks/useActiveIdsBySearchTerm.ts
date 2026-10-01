@@ -12,7 +12,7 @@ interface SearchResultBase {
   params: Record<string, string>
 }
 interface SearchResultSuccess extends SearchResultBase {
-  result: TableRowType[]
+  result: Pick<TableRowType, 'id'>[]
   total: number
 }
 

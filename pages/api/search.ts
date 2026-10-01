@@ -3,6 +3,9 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import path from 'path'
 import fs from 'fs/promises'
 import { existsSync } from 'fs'
+import { truncateSearchTerm } from '@lib/facilityFilterUtil'
+
+const FACILITY_TYPES = ['Beratung', 'Klinik', 'Amt', 'Online', 'Selbsthilfe']
 
 const searchData = ({
   data,
@@ -14,7 +17,7 @@ const searchData = ({
   filters: string[]
 }): TableRowType[] => {
   if (filters.length === 0) return []
-  if (!query && filters.length === 5) return data
+  if (!query && filters.length === FACILITY_TYPES.length) return data
   return data.filter((item) => {
     // check if item.fields.Typ is in the filters array
     if (
@@ -59,6 +62,11 @@ const handler = async (
   req: NextApiRequest,
   res: NextApiResponse
 ): Promise<void> => {
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET')
+    return res.status(405).json({ result: null, error: 'Method not allowed' })
+  }
+
   const url = new URL(req.url ?? '', 'http://localhost')
 
   // Get all query parameters as an object
@@ -71,32 +79,41 @@ const handler = async (
       .json({ result: null, error: 'Missing query parameter "query"' })
   }
 
+  const query = truncateSearchTerm(params.query)
   // the paramters filters is a comma sparated list. Create an an array from it
-  // If there is no filter applied we still get an string of 0 length. Which gets split into [""] an array with one empty string
-  // to prevent our filter function from failing we replace this with an empty array
-  const filters = params.filters.length === 0 ? [] : params.filters.split(',')
+  // Unknown or duplicate facility types are ignored, a missing or empty parameter results in an empty array
+  const filters = Array.from(
+    new Set(
+      (params.filters || '')
+        .split(',')
+        .filter((filter) => FACILITY_TYPES.includes(filter))
+    )
+  )
 
   const filePath = path.resolve(process.cwd(), './data/records.json')
   // check if the file ath te path exists
   if (!existsSync(filePath)) {
+    console.error(`/api/search: ${filePath} not found`)
     return res
       .status(500)
-      .json({ result: null, error: 'data/records.json File not found' })
+      .json({ result: null, error: 'Internal server error' })
   }
 
   try {
     const content = await fs.readFile(filePath, 'utf8')
     const data = JSON.parse(content) as TableRowType[]
-    const result = searchData({ data, query: params.query, filters })
-    return res.status(200).json({ params, result, total: data.length })
+    const result = searchData({ data, query, filters })
+    // Only the ids are needed by the client, the full records are part of the static page props
+    return res.status(200).json({
+      params: { query, filters: filters.join(',') },
+      result: result.map(({ id }) => ({ id })),
+      total: data.length,
+    })
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      return res.status(500).json({ result: null, error: error.message })
-    } else {
-      return res
-        .status(500)
-        .json({ result: null, error: new Error('unknown error') })
-    }
+    console.error('/api/search:', error)
+    return res
+      .status(500)
+      .json({ result: null, error: 'Internal server error' })
   }
 }
 
