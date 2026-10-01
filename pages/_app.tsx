@@ -1,3 +1,4 @@
+import 'maplibre-gl/dist/maplibre-gl.css'
 import '../styles/globals.css'
 import { TextsProvider } from '@lib/TextsContext'
 import { TextsMapType } from '@lib/TextsContext'
