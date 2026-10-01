@@ -1,5 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>technologiestiftung/renovate-config"],
+  "extends": [
+    "github>technologiestiftung/renovate-config",
+    "helpers:pinGitHubActionDigests"
+  ],
   "baseBranches": ["staging"]
 }
