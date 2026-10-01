@@ -49,6 +49,13 @@ If you want to start the app with the production table data, please change the v
 
 ## Grist
 
+> [!IMPORTANT]
+> The following examples are a starting point, not a hardened production setup. Before using them, please
+> - pin all images to a current, supported version instead of `latest` or old tags (the authentik `2022.9.0` and `postgres:12` images used below are outdated and have known vulnerabilities),
+> - run Grist with a formula sandbox (`GRIST_SANDBOX_FLAVOR=gvisor`), otherwise every document editor can execute code on the server,
+> - only expose Grist and authentik through a TLS-terminating reverse proxy and do not publish the plain HTTP ports to the internet,
+> - use a Grist API key of a dedicated account that only has read access to the facilities document for `NEXT_SECRET_GRIST_API_KEY`.
+
 Here is a working example of a `docker-compose.yml` to run Grist. Note that we are running this on a single node docker swarm. You might need to adjust this. Since grist has no auth built in, we use [authentik](https://goauthentik.io/) (see below) for authentication. See [this guide](https://support.getgrist.com/install/saml/#example-authentik) hon how to connect both. 
 
 ```yaml
@@ -76,7 +83,7 @@ services:
         constraints: [ node.role == manager ]
     environment:
 
-      DEBUG: "1"
+      # DEBUG: "1" # only for local troubleshooting, never in production
       PORT: 80
       APP_DOC_URL: https://$GRIST_DOMAIN
       APP_HOME_URL: https://$GRIST_DOMAIN
@@ -196,7 +203,8 @@ services:
     environment:
 
       AUTHENTIK_SECRET_KEY: $AUTHENTIK_SECRET_KEY
-      AUTHENTIK_ERROR_REPORTING__ENABLED: "true"
+      # Do not send error reports (incl. request data) to the vendor's Sentry instance
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
       # ----- email
       # SMTP Host Emails are sent to
       AUTHENTIK_EMAIL__HOST: $AUTHENTIK_EMAIL__HOST
@@ -253,7 +261,8 @@ services:
           - node.role == manager
     environment:
       AUTHENTIK_SECRET_KEY: $AUTHENTIK_SECRET_KEY
-      AUTHENTIK_ERROR_REPORTING__ENABLED: "true"
+      # Do not send error reports (incl. request data) to the vendor's Sentry instance
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
       # ----- email
       # SMTP Host Emails are sent to
       AUTHENTIK_EMAIL__HOST: $AUTHENTIK_EMAIL__HOST
@@ -285,11 +294,13 @@ services:
       # This is optional, and can be removed. If you remove this, the following will happen
       # - The permissions for the /media folders aren't fixed, so make sure they are 1000:1000
       # - The docker socket can't be accessed anymore
-    user: root
+    # Running as root with the docker socket mounted gives the worker root access to the host.
+    # Only enable this if you really need the docker integration of authentik.
+    # user: root
     volumes:
       - media:/media
       - certs:/certs
-      - /var/run/docker.sock:/var/run/docker.sock
+      # - /var/run/docker.sock:/var/run/docker.sock
       - custom-templates:/templates
       - geoip:/geoip
     # env_file:
