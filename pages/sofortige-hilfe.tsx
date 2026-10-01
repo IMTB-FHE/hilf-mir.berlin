@@ -8,6 +8,7 @@ import { Phone } from '@components/icons/Phone'
 import { useState } from 'react'
 import { Chevron } from '@components/icons/Chevron'
 import { BackButton } from '@components/BackButton'
+import { getSafeBackPath } from '@lib/sanitizeUtils'
 import { useIsEmergencyTime } from '@lib/hooks/useIsEmergencyTime'
 
 export const getStaticProps: GetStaticProps = async () => {
@@ -52,7 +53,7 @@ const Home: NextPage = () => {
       <div className="min-h-screen mx-auto max-w-xl">
         <BackButton
           href={{
-            pathname: typeof query.back === 'string' ? query.back : '/',
+            pathname: getSafeBackPath(query.back),
             query,
           }}
         />

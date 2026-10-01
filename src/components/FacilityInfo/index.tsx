@@ -17,6 +17,7 @@ import Link from 'next/link'
 import { FacilityLabels } from '@components/FacilityLabels'
 import { splitString } from '@lib/splitString'
 import FacilitySecondaryInfos from '@components/FacilitySecondaryInfos'
+import { getSafeExternalUrl } from '@lib/sanitizeUtils'
 
 interface FacilityInfoType {
   facility: TableRowType
@@ -102,7 +103,7 @@ export const FacilityInfo: FC<FacilityInfoType> = ({ facility }) => {
     {
       icon: <Globe />,
       text: facility.fields.Website,
-      href: facility.fields.Website,
+      href: getSafeExternalUrl(facility.fields.Website),
     },
     {
       icon: <Email />,

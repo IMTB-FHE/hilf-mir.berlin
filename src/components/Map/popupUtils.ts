@@ -3,6 +3,7 @@ import { FacilityType, getColorByFacilityType } from '@lib/facilityTypeUtil'
 import { isFacilityOpened } from '@lib/hooks/useIsFacilityOpened'
 import { MinimalRecordType } from '@lib/mapRecordToMinimum'
 import { TextsMapType } from '@lib/TextsContext'
+import { escapeHtml } from '@lib/sanitizeUtils'
 
 export function getPopupHTML(
   facilities: MinimalRecordType[],
@@ -12,7 +13,7 @@ export function getPopupHTML(
   const facility = facilities[0]
   const isOpened = isFacilityOpened(facility)
   return `
-    ${getTitleHTML(facility.title, facility.type)}
+    ${getTitleHTML(escapeHtml(facility.title), facility.type)}
     ${
       (isOpened &&
         `
@@ -99,7 +100,7 @@ function getRowHTML(title: string, type?: FacilityType): string {
             ></span>`
           : ''
       }
-      <span class="truncate inline-block">${title}</span>
+      <span class="truncate inline-block">${escapeHtml(title)}</span>
     </div>
   `
 }

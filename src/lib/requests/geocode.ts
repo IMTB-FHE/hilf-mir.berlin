@@ -29,7 +29,9 @@ export const geocode = async (query: string): Promise<SearchResultType> => {
 
   try {
     const response = await fetch(
-      `https://api.maptiler.com/geocoding/${query}.json?bbox=${BBOX_BERLIN}&key=${
+      `https://api.maptiler.com/geocoding/${encodeURIComponent(
+        query
+      )}.json?bbox=${BBOX_BERLIN}&key=${
         process.env.NEXT_PUBLIC_MAPTILER_API_KEY || ''
       }`
     )

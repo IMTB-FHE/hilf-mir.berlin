@@ -5,6 +5,7 @@ import {
   OpeningTimesBoundsType,
 } from './getRecordOpeningTimesBounds'
 import { splitString } from './splitString'
+import { getSafeExternalUrl } from './sanitizeUtils'
 
 type PrioNumberType = -1 | 0 | 1 | 2
 
@@ -47,7 +48,7 @@ export const mapRecordToMinimum = (record: TableRowType): MinimalRecordType => {
       disallowedTagsMode: 'discard',
     }),
     phone: record.fields.Telefonnummer || '',
-    website: record.fields.Website || '',
+    website: getSafeExternalUrl(record.fields.Website) || '',
     type: record.fields.Typ || 'Beratung',
   }
 }

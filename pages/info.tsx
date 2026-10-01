@@ -6,6 +6,7 @@ import classNames from '@lib/classNames'
 import { loadData } from '@lib/loadData'
 import { FaqList } from '@components/FaqList'
 import { BackButton } from '@components/BackButton'
+import { getSafeBackPath } from '@lib/sanitizeUtils'
 import { useRouter } from 'next/router'
 import { About } from '@components/About'
 import { Footer } from '@components/Footer'
@@ -31,7 +32,7 @@ const Info: Page = () => {
       <div className="min-h-screen mx-auto max-w-xl">
         <BackButton
           href={{
-            pathname: typeof back === 'string' ? back : '/',
+            pathname: getSafeBackPath(back),
             query: restQuery,
           }}
         />

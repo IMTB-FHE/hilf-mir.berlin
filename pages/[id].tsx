@@ -29,13 +29,17 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
       records: minimalRecords,
       record: {
         ...record,
-        Uber_uns: sanitizeHtml(record.fields.Uber_uns, {
-          allowedTags: ['a', 'b', 'i', 'em', 'strong', 'u', 'sup', 'sub'],
-          allowedAttributes: {
-            a: ['href', 'title'],
-          },
-          disallowedTagsMode: 'discard',
-        }),
+        fields: {
+          ...record.fields,
+          Uber_uns: sanitizeHtml(record.fields.Uber_uns || '', {
+            allowedTags: ['a', 'b', 'i', 'em', 'strong', 'u', 'sup', 'sub'],
+            allowedAttributes: {
+              a: ['href', 'title'],
+            },
+            allowedSchemes: ['http', 'https', 'mailto', 'tel'],
+            disallowedTagsMode: 'discard',
+          }),
+        },
       },
       labels,
       center: (() => {
